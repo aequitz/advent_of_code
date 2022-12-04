@@ -4,12 +4,8 @@ Day 1: Calorie Counting
 Austin Equitz
 austin.equitz@gmail.com
 '''
-import os
 
-script_dir = os.path.dirname(__file__)
-puzzle_input = os.path.join(script_dir, 'elves_and_calories.txt')
-
-with open(puzzle_input, 'r') as fin: elf_cals = fin.read().split('\n\n')
+with open('elves_and_calories.txt', 'r') as fin: elf_cals = fin.read().split('\n\n')
 
 # Part One - Find elf with most calories and report calories
 each_elf_cals = [[eval(cal) for cal in elf.split()] for elf in elf_cals]
