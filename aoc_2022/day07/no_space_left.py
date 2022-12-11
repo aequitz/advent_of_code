@@ -4,7 +4,6 @@ Day 7: No Space Left On Device
 Austin Equitz
 austin.equitz@gmail.com
 '''
-import itertools
 import re
 
 import treelib
