@@ -1,14 +1,15 @@
 '''
-Day 7: No Space Left On Device
+Day 8: Treetop Tree House
 
 Austin Equitz
 austin.equitz@gmail.com
 '''
-import itertools
+import math
+import numpy as np
 
 with open('tree_grid.txt', 'r') as fin: tree_input = fin.read().splitlines()
 
-tree_grid = [[int(char) for char in line] for line in tree_input]
+tree_grid = np.array([[int(char) for char in line] for line in tree_input])
 
 # Get stop indexes so outer border of trees is ignored
 num_rows = len(tree_grid)
@@ -16,35 +17,54 @@ num_cols = len(tree_grid[0])
 row_stop_idx = num_rows - 1
 col_stop_idx = num_rows - 1
 
-# Get index combinations to test around each tree
-all_areas = list(itertools.permutations([-1, 0, 1], 2))
-adj_tree_idxs = [(row,col) for row,col in all_areas if abs(row) != abs(col)]
-
 # Calculate perimeter trees
 perimeter_trees = num_rows * 2 + num_cols * 2 - 4
-print(perimeter_trees)
 
-# Print grid to visually see
-for row in tree_grid:
-    print(row)
-
+# Initialize loop variables
 inside_visible_trees = 0
+scenic_scores = []
+
+# Iterate through all inner trees (not including perimeter)
 for row_idx in range(1, row_stop_idx):
     for col_idx in range(1, col_stop_idx):
-        tree_ht = tree_grid[row_idx][col_idx]
+        current_tree = tree_grid[row_idx, col_idx]
 
-        trees_shorter = []
-        for row_chng,col_chng in adj_tree_idxs:
-            neighbor_tree_ht = tree_grid[row_idx + row_chng][col_idx + col_chng]
+        # Create lists of each tree line direction
+        north_trees = np.flip(tree_grid[0:row_idx, col_idx])
+        east_trees = tree_grid[row_idx, col_idx + 1:]
+        south_trees = tree_grid[row_idx + 1:, col_idx]
+        west_trees = np.flip(tree_grid[row_idx, 0:col_idx])
 
-            trees_shorter.append(tree_ht >= neighbor_tree_ht)
+        visible_tree_lines = []
+        viewing_distances = []
+        for tree_dirs in [north_trees, east_trees, south_trees, west_trees]:
 
-        all_trees_shorter = all(trees_shorter)
-        if all_trees_shorter:
-            inside_visible_trees += 1
-            print(f'Visible tree at [{row_idx}][{col_idx}]')
+            # Determine if each line to the edge of the trees makes
+            # the current tree visible
+            visible_line = all(tree < current_tree for tree in tree_dirs)
+            visible_tree_lines.append(visible_line)
 
+            # Find index of tree that blocks from the edges
+            blocking_tree_idx =  next((i for i,v in enumerate(tree_dirs) if v >= current_tree), None)
+
+            # Add the number of trees visible in the current tree line
+            if blocking_tree_idx != None:
+                viewing_dist = blocking_tree_idx + 1
+            else:
+                viewing_dist = len(tree_dirs)
+
+            viewing_distances.append(viewing_dist)
+
+        # Add tree to visible trees if any tree line causes it to be visible from the edge
+        if any(visible_tree_lines): inside_visible_trees += 1
+
+        # Append the scenic score
+        scenic_score = math.prod(viewing_distances)
+        scenic_scores.append(scenic_score)
 
 total_visible_trees = perimeter_trees + inside_visible_trees
 print(f'Total visible trees in grid: {total_visible_trees}')
+
+max_scenic_score = max(scenic_scores)
+print(f'The highest scenic score: {max_scenic_score}')
 
